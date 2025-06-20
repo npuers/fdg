@@ -1,5 +1,4 @@
 #![doc = include_str!("../README.md")]
-
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 #![deny(clippy::pedantic)]
 #![allow(clippy::module_name_repetitions)]
@@ -13,7 +12,8 @@ use petgraph::{
     Directed,
 };
 use rand::distributions::{uniform::SampleUniform, Distribution, Uniform};
-
+use rand::rngs::StdRng;
+use rand::SeedableRng;
 mod forces;
 
 #[doc(inline)]
@@ -58,34 +58,37 @@ where
 pub fn init_force_graph_uniform<T: Field + SampleUniform, const D: usize, N: Clone, E: Clone>(
     input: impl Into<StableGraph<N, E>>,
     range: T,
+    seed: u64,
 ) -> ForceGraph<T, D, N, E> {
-    init_force_graph(input, Uniform::new(-range, range))
+    init_force_graph(input, Uniform::new(-range, range), seed)
 }
 
 /// Create a [`ForceGraph`] from any graph and randomize the node positions within a given distribution.
 pub fn init_force_graph<T: Field, const D: usize, N: Clone, E: Clone>(
     input: impl Into<StableGraph<N, E>>,
     distribution: impl Distribution<T>,
+    seed: u64,
 ) -> ForceGraph<T, D, N, E> {
     let mut graph = input.into().map(
         |_, node| (node.clone(), Point::default()),
         |_, edge| edge.clone(),
     );
 
-    randomize_positions(&mut graph, distribution);
+    randomize_positions(&mut graph, distribution, seed);
 
     graph
 }
 
 /// Randomize all the node positions in a [`ForceGraph`] with a given distribution.
-/// 
+///
 /// This is helpful for generating starting positions.
 pub fn randomize_positions<T: Field, const D: usize, N, E>(
     graph: &mut ForceGraph<T, D, N, E>,
     distribution: impl Distribution<T>,
+    seed: u64,
 ) {
-    let mut rng = rand::thread_rng();
-    print!("JShfahsfkjl\n");
+    // let mut rng = rand::thread_rng();
+    let mut rng = StdRng::seed_from_u64(seed);
     for (_, pos) in graph.node_weights_mut() {
         *pos = Point::from(OVector::from_distribution_generic(
             Const::<D>,
