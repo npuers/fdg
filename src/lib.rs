@@ -85,7 +85,7 @@ pub fn randomize_positions<T: Field, const D: usize, N, E>(
     distribution: impl Distribution<T>,
 ) {
     let mut rng = rand::thread_rng();
-
+    print!("JShfahsfkjl\n");
     for (_, pos) in graph.node_weights_mut() {
         *pos = Point::from(OVector::from_distribution_generic(
             Const::<D>,
